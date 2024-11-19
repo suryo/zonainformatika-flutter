@@ -17,6 +17,8 @@ class _HomeState extends State<Home> {
   String _timeString = '';
   String _dateString = '';
   List<dynamic> _courses = [];
+  List<dynamic> _filteredCourses = [];
+  String _searchText = '';
 
   final List<String> imageList = [
     'assets/images/banner1.png',
@@ -38,6 +40,7 @@ class _HomeState extends State<Home> {
       final data = json.decode(response.body);
       setState(() {
         _courses = data['courses']['data'];
+        _filteredCourses = _courses;
       });
     } else {
       throw Exception('Failed to load courses');
@@ -60,6 +63,15 @@ class _HomeState extends State<Home> {
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
+    });
+  }
+
+  void _filterCourses(String query) {
+    setState(() {
+      _filteredCourses = _courses
+          .where((course) =>
+          course['title'].toLowerCase().contains(query.toLowerCase()))
+          .toList();
     });
   }
 
@@ -100,8 +112,9 @@ class _HomeState extends State<Home> {
                   );
                 }).toList(),
               ),
+              // Search bar
               Container(
-                height: 50,
+                height: 150,
                 width: double.infinity,
                 child: Padding(
                   padding: EdgeInsets.only(left: 10.0),
@@ -118,6 +131,27 @@ class _HomeState extends State<Home> {
                         _timeString,
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white60),
                       ),
+                      SizedBox(height: 10),
+                      Padding(
+                        padding: EdgeInsets.only(right: 10.0),
+                        child: TextField(
+                          onChanged: (value) {
+                            setState(() {
+                              _searchText = value;
+                              _filterCourses(_searchText);
+                            });
+                          },
+                          decoration: InputDecoration(
+                            hintText: 'Search courses...',
+                            prefixIcon: Icon(Icons.search),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -125,9 +159,9 @@ class _HomeState extends State<Home> {
               ListView.builder(
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
-                itemCount: _courses.length,
+                itemCount: _filteredCourses.length,
                 itemBuilder: (context, index) {
-                  final course = _courses[index];
+                  final course = _filteredCourses[index];
                   return GestureDetector(
                     onTap: () {
                       Navigator.push(
@@ -138,7 +172,7 @@ class _HomeState extends State<Home> {
                       );
                     },
                     child: Container(
-                      height: 100,
+                      height: 75,
                       margin: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                       padding: EdgeInsets.all(10),
                       decoration: BoxDecoration(
@@ -160,11 +194,11 @@ class _HomeState extends State<Home> {
                             borderRadius: BorderRadius.circular(10),
                             child: Image.network(
                               'https://zonainformatika.com/assets/image/course/${course['image']}',
-                              height: 80,
-                              width: 80,
+                              height: 60,
+                              width: 60,
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) {
-                                return Icon(Icons.laptop, size: 80, color: Colors.grey);
+                                return Icon(Icons.laptop, size: 60, color: Colors.grey);
                               },
                             ),
                           ),
@@ -194,7 +228,7 @@ class _HomeState extends State<Home> {
                             child: Text(
                               course['short_desc'] ?? '',
                               style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                              maxLines: 4,
+                              maxLines: 3,
                               overflow: TextOverflow.ellipsis,
                               textAlign: TextAlign.left,
                             ),

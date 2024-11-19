@@ -42,6 +42,10 @@ dependencies:
   geolocator: ^13.0.1
   carousel_slider: ^5.0.0
   flutter_quill: ^10.8.5
+  geocoding: ^3.0.0
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
+  shared_preferences: ^2.3.3
 
 dev_dependencies:
   flutter_test:

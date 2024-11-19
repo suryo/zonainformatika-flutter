@@ -68,7 +68,13 @@ class _DetailCoursePageState extends State<DetailCoursePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(courseData?['title'] ?? 'Course Details'),
+        // title: Text(courseData?['title'] ?? 'Course Details'),
+        title: Text(
+          'ZonaInformatika',
+          style: TextStyle(color: Colors.white, fontSize: 18),
+        ),
+        iconTheme: IconThemeData(color: Colors.white),
+        backgroundColor: Colors.black87,
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
@@ -140,15 +146,23 @@ class _DetailCoursePageState extends State<DetailCoursePage> {
                     title: Text(detail['title'] ?? 'Detail Title'),
                     children: [
                       Padding(
-                        padding: const EdgeInsets.all(8.0),
+                        padding: const EdgeInsets.all(0.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const SizedBox(height: 10),
-                            // Menampilkan teks dan gambar
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: richTextWidgets,
+                              children: richTextWidgets.map((widget) {
+                                if (widget is Text) {
+                                  return Text(
+                                    widget.data ?? '',
+                                    style: widget.style,
+                                    textAlign: TextAlign.justify,
+                                  );
+                                }
+                                return widget;
+                              }).toList(),
                             ),
                           ],
                         ),
