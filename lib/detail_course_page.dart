@@ -1,10 +1,17 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:zonainformatika/account_page.dart';
+import 'package:zonainformatika/article_page.dart';
+import 'package:zonainformatika/home.dart';
+import 'package:zonainformatika/login.dart';
+// import 'package:zonainformatika/login_page.dart';
+import 'package:zonainformatika/mylearning_page.dart';
+import 'package:zonainformatika/tutor_page.dart';
 import 'custom_bottom_nav_bar.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_quill/flutter_quill.dart' as quill;
-import 'dart:typed_data'; // Untuk menangani image data
-
 
 class DetailCoursePage extends StatefulWidget {
   final Map<String, dynamic> course;
@@ -20,29 +27,63 @@ class _DetailCoursePageState extends State<DetailCoursePage> {
   Map<String, dynamic>? courseData;
   List<dynamic> courseDetails = [];
   bool isLoading = true;
+  bool availabilityOnRegister = false;
+  String? userToken;
 
   @override
   void initState() {
     super.initState();
-    fetchCourseDetail();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    if (token != null) {
+      userToken = token;
+      fetchCourseDetail();
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginPage()),
+      );
+    }
   }
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
+    if (index == 0) {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
+    } else if (index == 1) {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => TutorPage()));
+    } else if (index == 2) {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => MyLearningPage()));
+    } else if (index == 3) {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => ArticlePage()));
+    } else if (index == 4) {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => AccountPage()));
+    }
   }
 
   Future<void> fetchCourseDetail() async {
-    final url = Uri.parse('http://zonainformatika.com/api/course/${widget.course['id']}');
+    if (userToken == null) return;
+
+    final url = Uri.parse('http://192.168.6.119:8000/api/showcourse/${widget.course['id']}');
     try {
-      final response = await http.get(url);
+      final response = await http.get(
+        url,
+        headers: {'Authorization': 'Bearer $userToken'},
+      );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
           courseData = data['course'];
-          courseDetails = data['detail'] ?? [];
+          courseDetails = data['course_details'] ?? [];
+          availabilityOnRegister = data['availability_on_register'] == 0;
           isLoading = false;
         });
       } else {
@@ -59,16 +100,58 @@ class _DetailCoursePageState extends State<DetailCoursePage> {
     }
   }
 
-  // Fungsi untuk mengubah base64 menjadi Uint8List
+  Future<void> registerForCourse() async {
+    if (userToken == null) return;
+
+    final url = Uri.parse('http://192.168.6.119:8000/api/course/${widget.course['id']}/register');
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Authorization': 'Bearer $userToken'},
+      );
+
+      final responseData = json.decode(response.body);
+
+      if (response.statusCode == 200) {
+        if (responseData['message'] == 'You have successfully registered for the course.') {
+          // Show success message and registration details
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(responseData['message'])),
+          );
+          print('Registration Details: ${responseData['registration']}');
+        }
+      } else if (responseData['message'] == 'You are already registered for this course.') {
+        // Show message if already registered
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(responseData['message'])),
+        );
+      } else {
+        // Handle other errors
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Register Done')),
+        );
+        Future.delayed(Duration(seconds: 2), () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => Home()), // Navigasi ke Home.dart
+          );
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
+
   Uint8List decodeBase64Image(String base64String) {
-    return base64Decode(base64String.split(',')[1]); // Mengambil bagian setelah 'data:image/png;base64,'
+    return base64Decode(base64String.split(',')[1]);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // title: Text(courseData?['title'] ?? 'Course Details'),
         title: Text(
           'ZonaInformatika',
           style: TextStyle(color: Colors.white, fontSize: 18),
@@ -78,7 +161,14 @@ class _DetailCoursePageState extends State<DetailCoursePage> {
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(  // Membungkus semua konten dalam SingleChildScrollView
+          : availabilityOnRegister
+          ? Center(
+        child: ElevatedButton(
+          onPressed: registerForCourse,
+          child: Text('Register for Course'),
+        ),
+      )
+          : SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.all(16.0),
           child: Column(
@@ -110,8 +200,8 @@ class _DetailCoursePageState extends State<DetailCoursePage> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               ListView.builder(
-                shrinkWrap: true, // Membatasi ukuran ListView agar tidak meluas
-                physics: NeverScrollableScrollPhysics(), // Agar ListView tidak menggulirkan dirinya sendiri
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
                 itemCount: courseDetails.length,
                 itemBuilder: (context, index) {
                   final detail = courseDetails[index];
@@ -121,26 +211,22 @@ class _DetailCoursePageState extends State<DetailCoursePage> {
                   final doc = quill.Document.fromJson(delta);
                   final text = doc.toPlainText();
 
-                  // Memproses gambar dalam Delta
                   List<Widget> richTextWidgets = [];
                   for (var op in jsonDecode(updatedDeltaJson)['ops']) {
                     if (op['insert'] is String) {
-                      // Menambahkan teks biasa
                       richTextWidgets.add(Text(op['insert']));
                     } else if (op['insert']['image'] != null) {
-                      // Menambahkan gambar
                       final imageData = op['insert']['image'];
                       final imageBytes = decodeBase64Image(imageData);
                       richTextWidgets.add(
                         Image.memory(
                           imageBytes,
-                          height: 150, // Menyesuaikan ukuran gambar
-                          width: 150, // Menyesuaikan ukuran gambar
+                          height: 150,
+                          width: 150,
                         ),
                       );
                     }
                   }
-
 
                   return ExpansionTile(
                     title: Text(detail['title'] ?? 'Detail Title'),

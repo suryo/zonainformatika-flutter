@@ -92,7 +92,12 @@ class DashboardPage extends StatelessWidget {
                 leading: Icon(Icons.home, color: Colors.white),
                 title: Text('Home', style: TextStyle(color: Colors.white)),
                 onTap: () {
-                  // Aksi untuk menu Home
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Home(),
+                    ),
+                  );
                 },
               ),
               ListTile(

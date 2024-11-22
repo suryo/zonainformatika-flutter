@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:http/http.dart' as http;
+import 'package:zonainformatika/account_page.dart';
+import 'package:zonainformatika/article_page.dart';
+import 'package:zonainformatika/mylearning_page.dart';
+import 'package:zonainformatika/tutor_page.dart';
 import 'dart:convert';
 import 'detail_course_page.dart';
 import 'custom_bottom_nav_bar.dart';
 import 'custom_drawer.dart';
 import 'dart:async';
+// import 'mylearning_page.dart';
+// import 'tutor_page.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -64,6 +70,47 @@ class _HomeState extends State<Home> {
     setState(() {
       _selectedIndex = index;
     });
+    // Adjust navigation logic based on the selected index
+    if (index == 0) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => Home(),
+        ),
+      );
+    }
+    else if (index == 1) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TutorPage(),
+        ),
+      );
+    }
+    else if (index == 2) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MyLearningPage(),
+        ),
+      );
+    }
+    else if (index == 3) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ArticlePage(),
+        ),
+      );
+    }
+    else if (index == 4) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AccountPage(),
+        ),
+      );
+    }
   }
 
   void _filterCourses(String query) {

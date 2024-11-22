@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dashboard.dart'; // Import halaman dashboard
+import 'account_page.dart';
 import '../services/auth_service.dart'; // Import AuthService
 import 'custom_drawer.dart'; // Import CustomDrawer
 
@@ -141,7 +142,7 @@ print(success);
         // Navigasi ke dashboard jika login berhasil
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => DashboardPage()),
+          MaterialPageRoute(builder: (context) => AccountPage()),
         );
       } else {
         // Tampilkan pesan error jika login gagal

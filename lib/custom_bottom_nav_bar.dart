@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'home.dart';
 import 'tentangkami.dart';
 import 'list_todo_page.dart';
+import 'mylearning_page.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
   final int selectedIndex;
@@ -24,8 +25,8 @@ class CustomBottomNavBar extends StatelessWidget {
           label: 'Home',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.search),
-          label: 'Search',
+          icon: Icon(Icons.supervised_user_circle),
+          label: 'Tutor',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.arrow_circle_up),
