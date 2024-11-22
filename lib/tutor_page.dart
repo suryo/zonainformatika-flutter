@@ -10,6 +10,8 @@ import 'mylearning_page.dart';
 import 'article_page.dart';
 import 'account_page.dart';
 import 'custom_bottom_nav_bar.dart';
+import 'navigation_helper.dart'; // Import file navigasi baru
+
 
 class TutorPage extends StatefulWidget {
   @override
@@ -23,44 +25,8 @@ class _TutorPageState extends State<TutorPage> {
     setState(() {
       _selectedIndex = index;
     });
-    if (index == 0) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => Home(),
-        ),
-      );
-    } else if (index == 1) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => TutorPage(),
-        ),
-      );
-    } else if (index == 2) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => MyLearningPage(),
-        ),
-      );
-    } else if (index == 3) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ArticlePage(),
-        ),
-      );
-    } else if (index == 4) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => AccountPage(),
-        ),
-      );
-    }
+    onItemTapped(context, index); // Panggil fungsi global
   }
-
   Future<List<Map<String, dynamic>>> fetchTutors() async {
     final url = Uri.parse('http://192.168.6.119:8000/api/tutors');
     final response = await http.get(url);
